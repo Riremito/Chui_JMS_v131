@@ -11,6 +11,4 @@
 ## 実行方法
 + sqlをchui_jms_v131にimportする
 + JMS v131.0のクライアントを用意する
-+ Netbeansでビルド後
-	+ 帶介面啟動伺服器.batの工具の左上のボタンを押して装備などの情報を更新
-	+ run.batを実行
++ Netbeansでビルド後run.batを実行
