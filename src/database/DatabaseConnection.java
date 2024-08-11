@@ -26,8 +26,6 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.LinkedList;
 import constants.ServerConstants;
-import constants.GameConstants;
-import server.ServerProperties;
 
 /**
  * All OdinMS servers maintain a Database Connection. This class therefore "singletonices" the connection per process.
@@ -108,7 +106,7 @@ public class DatabaseConnection {
             }
             try {
                 final Connection con = DriverManager.getConnection(
-					"jdbc:mysql://localhost:3306/v131_jms" + "?autoReconnect=true&characterEncoding=utf8", 
+					"jdbc:mysql://localhost:3306/chui_jms_v131" + "?autoReconnect=true&characterEncoding=utf8", 
 					ServerConstants.SQL_USER, ServerConstants.SQL_PASSWORD);
                 allConnections.add(con);
                 return con;

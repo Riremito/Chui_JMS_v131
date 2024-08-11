@@ -58,6 +58,7 @@ public abstract class AbstractScriptManager {
                     return null;
                 }
                 engine = sem.getEngineByName("nashorn");
+                engine.eval("load('nashorn:mozilla_compat.js');" + System.lineSeparator());
                 if (c != null) {
                     c.setScriptEngine(path, engine);
                 }

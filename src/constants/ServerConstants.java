@@ -20,13 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package constants;
 
-import java.util.List;
 import java.net.InetAddress;
-import java.util.LinkedList;
-import server.Randomizer;
-import java.lang.management.ManagementFactory;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 import server.ServerProperties;
 
 public class ServerConstants /*implements ServerConstantsMBean */{

@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package client;
 
 import constants.GameConstants;
-import constants.ServerConstants;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,7 +35,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
 import java.io.Serializable;
 
 import javax.script.ScriptEngine;
@@ -46,7 +44,6 @@ import database.DatabaseException;
 import handling.cashshop.CashShopServer;
 import handling.channel.ChannelServer;
 import handling.login.LoginServer;
-import handling.netty.MaplePacketDecoder;
 import handling.world.MapleMessengerCharacter;
 import handling.world.MapleParty;
 import handling.world.MaplePartyCharacter;
@@ -66,6 +63,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import server.Timer.PingTimer;
 import server.quest.MapleQuest;
 import tools.MaplePacketCreator;
@@ -409,6 +411,42 @@ public class MapleClient implements Serializable {
         gender = (byte) -1;
     }
 
+    public int auto_register(String MapleID, String pwd) {
+        String password1_hash = null;
+        String password2_hash = null;
+        try {
+            password1_hash = LoginCryptoLegacy.encodeSHA1(pwd);
+            password2_hash = LoginCryptoLegacy.encodeSHA1("777777");
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(MapleClient.class.getName()).log(Level.SEVERE, null, ex);
+            return 0;
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(MapleClient.class.getName()).log(Level.SEVERE, null, ex);
+            return 0;
+        }
+
+        try {
+            Connection con = DatabaseConnection.getConnection();
+            PreparedStatement ps = con.prepareStatement("INSERT INTO accounts (name, password, 2ndpassword, ACash, gender) VALUES (?, ?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, MapleID);
+            ps.setString(2, password1_hash);
+            ps.setString(3, password2_hash);
+            ps.setInt(4, 10000000);
+            // 性別
+            ps.setByte(5, (byte) 0);
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            rs.next();
+            rs.close();
+            ps.close();
+            return 1;
+        } catch (SQLException e) {
+            System.err.println("ERROR" + e);
+        }
+        return 0;
+    }
+
     public int login(String login, String pwd, boolean ipMacBanned) {
         int loginok = 5;
         try {
@@ -431,7 +469,7 @@ public class MapleClient implements Serializable {
                 greason = rs.getByte("greason");
                 tempban = getTempBanCalendar(rs);
                 gender = rs.getByte("gender");
-				
+
                 final boolean admin = rs.getInt("gm") > 1;
 
                 if (secondPassword != null && salt2 != null) {
@@ -697,7 +735,7 @@ public class MapleClient implements Serializable {
                     updateLoginState(state, getSessionIPAddress());
                 }
             }
-/*            if (state == MapleClient.LOGIN_SERVER_TRANSITION || state == MapleClient.CHANGE_CHANNEL) {
+            /*            if (state == MapleClient.LOGIN_SERVER_TRANSITION || state == MapleClient.CHANGE_CHANNEL) {
                 if (rs.getTimestamp("lastlogin").getTime() + 20000 < System.currentTimeMillis()) { // connecting to chanserver timeout
                     state = MapleClient.LOGIN_NOTLOGGEDIN;
                     updateLoginState(state, getSessionIPAddress());
@@ -857,7 +895,7 @@ public class MapleClient implements Serializable {
                     return;
                 }
                 try {
-                    if (chz == -1 || ch == null /*|| clone */|| ch.isShutdown()) {
+                    if (chz == -1 || ch == null /*|| clone */ || ch.isShutdown()) {
                         player = null;
                         return;//no idea
                     }
@@ -867,7 +905,7 @@ public class MapleClient implements Serializable {
                     if (party != null) {
                         chrp.setOnline(false);
                         World.Party.updateParty(party.getId(), PartyOperation.LOG_ONOFF, chrp);
-/*                        if (map != null && party.getLeader().getId() == idz) {
+                        /*                        if (map != null && party.getLeader().getId() == idz) {
                             MaplePartyCharacter lchr = null;
                             for (MaplePartyCharacter pchr : party.getMembers()) {
                                 if (pchr != null && map.getCharacterById(pchr.getId()) != null && (lchr == null || lchr.getLevel() < pchr.getLevel())) {
@@ -1217,14 +1255,13 @@ public class MapleClient implements Serializable {
         engines.remove(name);
     }
 
-/*    public final ScheduledFuture<?> getIdleTask() {
+    /*    public final ScheduledFuture<?> getIdleTask() {
         return idleTask;
     }
 
     public final void setIdleTask(final ScheduledFuture<?> idleTask) {
         this.idleTask = idleTask;
     }*/
-
     protected static final class CharNameAndId {
 
         public final String name;
