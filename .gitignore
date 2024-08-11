@@ -1,0 +1,14 @@
+/nbproject/
+/build/
+/dist/
+/MonitorLogs/
+/stable/
+*.rtf
+/out/
+/.idea/
+/wz/
+/scripts/
+/jms_wz/
+/jms_scripts/
+/bat/
+*.lnk
